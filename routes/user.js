@@ -10,14 +10,14 @@ require("dotenv").config();
 
 const mongoose = require("mongoose");
 
-const User = require("../Models/User");
+const User = require("./Models/User");
 
 const jwt = require("jsonwebtoken")
 
 const app = express();
 
 const cors = require("cors");
-const userAuth = require("../userAuth/userAuth");
+const userAuth = require("./userAuth/userAuth");
 
 
 app.use(cors());
