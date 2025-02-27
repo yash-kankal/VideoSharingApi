@@ -2,17 +2,17 @@ const express = require("express");
 
 const Router = express.Router();
 
-const userAuth = require("./userAuth/userAuth");
+const userAuth = require("../userAuth/userAuth");
 
 const jwt = require("jsonwebtoke");
 
 const cloudinary = require("cloudinary").v2
 
-const Video = require("./models/Video");
+const Video = require("../models/Video");
 
 const mongoose = require("mongoose");
 
-const Comment = require("./models/Comment");
+const Comment = require("../models/Comment");
 
 cloudinary.config({
     
