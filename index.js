@@ -3,9 +3,9 @@ const app = express();
 const port = 3000;
 const mongoose= require("mongoose");
 require("dotenv").config();
-const userRoute = require("./API/routes/user");
-const videoRoute = require ("./API/routes/video")
-const commentRoute = require("./API/routes/comment")
+const userRoute = require("./routes/user");
+const videoRoute = require ("./routes/video")
+const commentRoute = require("./routes/comment")
 const fileUpload = require("express-fileupload");
 const bodyParser = require("body-parser")
 const cloudinary = require("cloudinary").v2
