@@ -4,7 +4,7 @@ const Router = express.Router();
 
 const userAuth = require("../userAuth/userAuth");
 
-const jwt = require("jsonwebtoke");
+const jwt = require("jsonwebtoken");
 
 const cloudinary = require("cloudinary").v2
 
