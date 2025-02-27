@@ -40,12 +40,6 @@ connectMongoDB();
 
 app.use(bodyParser.json());
 
-app.use(fileUpload({
-    useTempFiles: true,
-    tempFileDir: "/temp/"
-
-}))
-
 app.use(fileUpload({ useTempFiles: true, tempFileDir: "/tmp/" }));
 
 app.use("/user",userRoute)
