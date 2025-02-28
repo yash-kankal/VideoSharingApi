@@ -121,9 +121,8 @@ Router.post("/login", async(req,res)=>{
 
             return res.status(200).json({
                 msg: "User Login is Successful!",
-                token: token
-                user:findUser
-
+                token: token,
+                user: findUser
             })
       
     }
