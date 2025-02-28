@@ -9,6 +9,7 @@ const commentRoute = require("./routes/comment")
 const fileUpload = require("express-fileupload");
 const bodyParser = require("body-parser")
 const cloudinary = require("cloudinary").v2
+const cors = require("cors");
 
 
 cloudinary.config({
@@ -16,6 +17,8 @@ cloudinary.config({
 })
 
 app.use(express.json());
+
+app.use(cors());
 
 
 const connectMongoDB = async () =>
