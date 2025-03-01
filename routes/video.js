@@ -22,6 +22,20 @@ cloudinary.config({
 })
 
 
+Router.get("/my-videos", userAuth, async (req,res)=>
+{{
+
+    const token = req.headers.authorization.split(" ")[1]
+
+    const user = await jwt.verify(token, process.env.TOKEN_SECRET_KEY);
+
+    const videos = await Video.findById({user_id : user._id})
+
+    res.status(200).json({
+        videos : videos
+    })    
+
+}})
 
 
 Router.post("/uploadvideo", userAuth, async (req,res)=>
