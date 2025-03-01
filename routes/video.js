@@ -32,7 +32,7 @@ Router.get("/my-videos", userAuth, async (req, res) => {
 
         const user = jwt.verify(token, process.env.TOKEN_SECRET_KEY);
 
-        const videos = await Video.find({ user_id: user._id }); // Corrected query
+        const videos = await Video.find({ user_id: user._id }).populate("user_id", "channelName","logoUrl");
 
         res.status(200).json({ videos });
     } catch (error) {
