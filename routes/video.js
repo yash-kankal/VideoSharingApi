@@ -29,7 +29,7 @@ Router.get("/my-videos", userAuth, async (req,res)=>
 
     const user = await jwt.verify(token, process.env.TOKEN_SECRET_KEY);
 
-    const videos = await Video.findById({user_id : user._id})
+    const videos = await Video.findById({user_id.toString() : user._id})
 
     res.status(200).json({
         videos : videos
