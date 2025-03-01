@@ -22,21 +22,24 @@ cloudinary.config({
 })
 
 
-Router.get("/my-videos", userAuth, async (req,res)=>
-{{
+Router.get("/my-videos", userAuth, async (req, res) => {
+    try {
+        const token = req.headers.authorization.split(" ")[1];
 
-    const token = req.headers.authorization.split(" ")[1]
+        if (!token) {
+            return res.status(401).json({ error: "No token provided" });
+        }
 
-    const user = await jwt.verify(token, process.env.TOKEN_SECRET_KEY);
+        const user = jwt.verify(token, process.env.TOKEN_SECRET_KEY);
 
-    const videos = await Video.findById({user_id.toString() : user._id})
+        const videos = await Video.find({ user_id: user._id }); // Corrected query
 
-    res.status(200).json({
-        videos : videos
-    })    
-
-}})
-
+        res.status(200).json({ videos });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
 
 Router.post("/uploadvideo", userAuth, async (req,res)=>
 {
