@@ -21,6 +21,24 @@ cloudinary.config({
     api_secret: process.env.API_SECRET ,
 })
 
+Router.get("/:videoId", async (req, res) => {
+    try {
+        const video = await Video.findById(req.params.videoId);
+        if (!video) {
+            return res.status(404).json({ msg: "Video not found" });
+        }
+
+        // Increment view count when the video is accessed
+        video.views += 1;
+        await video.save();
+
+        res.status(200).json(video);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+
 Router.get("/all-videos", userAuth, async (req, res) => {
     try {
         const token = req.headers.authorization.split(" ")[1];
