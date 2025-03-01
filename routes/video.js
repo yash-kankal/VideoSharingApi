@@ -22,18 +22,7 @@ cloudinary.config({
 })
 
 
-Router.get("/:videoId", userAuth, async (req, res) => {
-  try {
-    const video = await Video.findById(req.params.videoId).populate("user_id", "channelName");
-    if (!video) {
-      return res.status(404).json({ error: "Video not found" });
-    }
-    res.status(200).json({ video });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
-});
+
 
 Router.get("/all-videos", userAuth, async (req, res) => {
     try {
@@ -352,6 +341,18 @@ Router.put("/view/:videoId", async (req, res) => {
     }
 });
 
+Router.get("/:videoId", userAuth, async (req, res) => {
+  try {
+    const video = await Video.findById(req.params.videoId).populate("user_id", "channelName");
+    if (!video) {
+      return res.status(404).json({ error: "Video not found" });
+    }
+    res.status(200).json({ video });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 
 
