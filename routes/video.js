@@ -21,6 +21,24 @@ cloudinary.config({
     api_secret: process.env.API_SECRET ,
 })
 
+Router.get("/all-videos", userAuth, async (req, res) => {
+    try {
+        const token = req.headers.authorization.split(" ")[1];
+
+        if (!token) {
+            return res.status(401).json({ error: "No token provided" });
+        }
+
+        const user = jwt.verify(token, process.env.TOKEN_SECRET_KEY);
+
+        const videos = await Video.find().populate("user_id");
+
+        res.status(200).json({ videos });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
 
 Router.get("/my-videos", userAuth, async (req, res) => {
     try {
