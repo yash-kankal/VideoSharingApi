@@ -1,8 +1,13 @@
+
 const express = require("express");
 
 const Router = express.Router();
 
 const userAuth = require("../userAuth/userAuth");
+
+const jwt = require("jsonwebtoken");
+
+const cloudinary = require("cloudinary").v2
 
 const Video = require("../models/Video");
 
@@ -10,112 +15,192 @@ const mongoose = require("mongoose");
 
 const Comment = require("../models/Comment");
 
+cloudinary.config({
+    
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.API_KEY,
+    api_secret: process.env.API_SECRET ,
+})
 
-// POST /comment/new-comment/:videoId — add a comment
-Router.post("/new-comment/:videoId", userAuth, async (req, res) => {
-    try {
-        if (!req.body.comment || !req.body.comment.trim()) {
-            return res.status(400).json({ error: "Comment text is required" });
-        }
+Router.put("/new-comment/:videoId", userAuth, async (req, res) => {
 
-        const videoInfo = await Video.findById(req.params.videoId);
-        if (!videoInfo) {
-            return res.status(404).json({ error: "Video not found" });
-        }
+    
+    const token = req.headers.authorization.split(" ")[1];
+    const user = await jwt.verify(token, process.env.TOKEN_SECRET_KEY);
+    
+    const videoInfo = await Video.findById(req.params.videoId);
+    
+    const userComment = new Comment({
+      _id: new mongoose.Types.ObjectId(),
+      comment: req.body.comment,
+      commentedBy: user._id,
+      videoId: videoInfo._id,
+    });
+  
+    await userComment.save();
+  
+    res.status(200).json({
+      msg: userComment.comment,
+    });
+  });
 
-        const userComment = new Comment({
-            _id: new mongoose.Types.ObjectId(),
-            comment: req.body.comment.trim(),
-            commentedBy: req.user._id,
-            videoId: videoInfo._id,
-        });
 
-        await userComment.save();
+  Router.put("/new-comment/:videoId", userAuth, async (req, res) => {
 
-        // Return the saved comment with author info
-        const populated = await userComment.populate("commentedBy", "channelName logoUrl");
+    try{
 
-        res.status(201).json({ comment: populated });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+      const token = req.headers.authorization.split(" ")[1];
+    const user = await jwt.verify(token, process.env.TOKEN_SECRET_KEY);
+    
+    const videoInfo = await Video.findById(req.params.videoId);
+    
+    const userComment = new Comment({
+      _id: new mongoose.Types.ObjectId(),
+      comment: req.body.comment,
+      commentedBy: user._id,
+      videoId: videoInfo._id,
+    });
+  
+    await userComment.save();
+  
+    res.status(200).json({
+      msg: userComment.comment,
+    });
+
     }
-});
-
-
-// GET /comment/getcomments/:videoId — paginated comment list
-Router.get("/getcomments/:videoId", async (req, res) => {
-    try {
-        const page  = Math.max(1, parseInt(req.query.page)  || 1);
-        const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 20));
-        const skip  = (page - 1) * limit;
-
-        const [comments, total] = await Promise.all([
-            Comment.find({ videoId: req.params.videoId })
-                .populate("commentedBy", "channelName logoUrl")
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(limit),
-            Comment.countDocuments({ videoId: req.params.videoId }),
-        ]);
-
-        res.status(200).json({
-            commentList: comments,
-            total,
-            page,
-            pages: Math.ceil(total / limit),
-        });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+    
+    catch (err)
+    {
+      res.status(500).json({
+        Error: err
+      })
     }
-});
+  })
 
 
-// PUT /comment/editcomment/:commentId — edit own comment
-Router.put("/editcomment/:commentId", userAuth, async (req, res) => {
-    try {
-        if (!req.body.comment || !req.body.comment.trim()) {
-            return res.status(400).json({ error: "Comment text is required" });
-        }
+  Router.get("/getcomments/:videoId", async (req, res) => {
 
-        const commentInfo = await Comment.findById(req.params.commentId);
-        if (!commentInfo) {
-            return res.status(404).json({ error: "Comment not found" });
-        }
-        if (req.user._id.toString() !== commentInfo.commentedBy.toString()) {
-            return res.status(403).json({ error: "You are not authorized to edit this comment" });
-        }
 
-        const updatedComment = await Comment.findByIdAndUpdate(
-            req.params.commentId,
-            { comment: req.body.comment.trim() },
-            { new: true }
-        ).populate("commentedBy", "channelName logoUrl");
+    try{
 
-        res.status(200).json({ updatedComment });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+      const allcomments = await Comment.find({videoId: req.params.videoId}).populate('commentedBy');
+
+      res.status(200).json({
+  
+        commentList: allcomments
+      })
+  
+
     }
-});
 
+    catch(err)
+    {
 
-// DELETE /comment/deletecomment/:commentId — delete own comment
-Router.delete("/deletecomment/:commentId", userAuth, async (req, res) => {
-    try {
-        const commentInfo = await Comment.findById(req.params.commentId);
-        if (!commentInfo) {
-            return res.status(404).json({ error: "Comment not found" });
-        }
-        if (req.user._id.toString() !== commentInfo.commentedBy.toString()) {
-            return res.status(403).json({ error: "You are not authorized to delete this comment" });
-        }
+      res.status(500).json({
 
-        await Comment.findByIdAndDelete(req.params.commentId);
-
-        res.status(200).json({ msg: "Comment deleted" });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+        Error: err
+      })
     }
-});
+
+  });
+
+  Router.put("/editcomment/:commentId",userAuth, async (req, res) => {
 
 
-module.exports = Router;
+    try{
+
+      token = req.headers.authorization.split(" ")[1];
+
+      const user = await jwt.verify(token, process.env.TOKEN_SECRET_KEY);
+
+      console.log(user)
+
+      const commentInfo = await Comment.findById(req.params.commentId);
+
+      console.log(commentInfo)
+
+      if(user._id.toString() === commentInfo.commentedBy.toString())
+      {
+         const updateToMake = {
+
+          comment : req.body.comment
+         }
+
+         const updatedComment = await Comment.findByIdAndUpdate(req.params.commentId, updateToMake, {new:true})
+
+         res.status(200).json({
+          updatedComment : updatedComment
+         })
+
+      }
+
+      else{
+
+        res.status(500).json({
+          error : "there is some issue you might wanna consider correcting"
+        })
+      }
+
+
+    }
+
+    catch(err)
+    {
+
+      res.status(500).json({
+
+        Error: err
+      })
+    }
+  });
+
+
+  Router.delete("/deletecomment/:commentId",userAuth, async (req, res) => {
+
+
+    try{
+
+      token = req.headers.authorization.split(" ")[1];
+
+      const user = await jwt.verify(token, process.env.TOKEN_SECRET_KEY);
+
+      console.log(user)
+
+      const commentInfo = await Comment.findById(req.params.commentId);
+
+      console.log(commentInfo)
+
+      if(user._id.toString() === commentInfo.commentedBy.toString())
+      {
+
+         await Comment.findByIdAndDelete(req.params.commentId)
+
+         res.status(200).json({
+          msg : "Comment has been deleted"
+         })
+
+      }
+
+      else{
+
+        res.status(500).json({
+          error : "there is some issue you might wanna consider correcting"
+        })
+      }
+
+
+    }
+
+    catch(err)
+    {
+
+      res.status(500).json({
+
+        Error: err
+      })
+    }
+  });
+
+
+  module.exports = Router;
+
