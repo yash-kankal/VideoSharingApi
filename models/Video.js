@@ -39,12 +39,12 @@ const videoSchema = mongoose.Schema({
 
     thumbnailId:{
         type:String,
-        default: ""
+        default: 0
     },
 
     category:{
         type:String,
-        default: ""
+        default: 0
     },
 
     tags:[
